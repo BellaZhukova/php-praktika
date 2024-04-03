@@ -1,0 +1,46 @@
+version: latest
+
+networks:
+  ttit-network:
+    driver: bridge
+
+volumes:
+  ttit-vl:
+    driver: local
+
+services:
+  docker-nginx:
+    image: nginx
+    ports:
+      - '8094:80'
+    volumes:
+      - ./:/usr/share/nginx/html
+      - ./nginx:/etc/nginx/conf.s
+    networks:
+      - ttit-network
+  db:
+    image: mariadb
+    volumes:
+      - ttit-vl:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: password
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    networks:
+      - ttit-network
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - '8000:80'
+    environment:
+      - PMA_ARBITRARY=1
+    networks:
+      - ttit-network
+  php-fpm:
+    build:
+      context: ./php-fpm
+    volumes:
+      - ./:/var/www
+    networks:
+      - ttit-network
